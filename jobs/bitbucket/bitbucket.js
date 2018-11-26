@@ -36,23 +36,29 @@ module.exports = {
 	 * @param jobCallback
 	 */
 	onRun: async function (config, dependencies, jobCallback) {
-		const accessToken = process.env.BITBUCKET_ACCESS_TOKEN;
+		try {
+			const { globalAuth, authName = 'bitbucket' } = config;
 
-		if (!accessToken) {
-			return jobCallback('missing BitBucket access token');
-		}
-
-		const { baseUrl, filterType, projectName, repoName } = config;
-		const response = await axios({
-			url: `${baseUrl}/rest/api/1.0/projects/${repoName.toUpperCase()}/repos/${projectName.toLowerCase()}/pull-requests`,
-			headers: {
-				Accept: 'application/json',
-				Authorization: `Bearer ${accessToken}`
+			if (!globalAuth || !globalAuth[authName] || !globalAuth[authName].accessToken) {
+				return jobCallback('missing BitBucket access token');
 			}
-		});
 
-		const { data } = response;
-		const pullRequests = data.values.filter(filters[filterType || 'default']);
-		jobCallback(null, { jobConfig: config, pullRequests });
+			const { accessToken } = globalAuth[authName];
+			const { baseUrl, filterType, projectName, repoName } = config;
+
+			const response = await axios({
+				url: `${baseUrl}/rest/api/1.0/projects/${repoName.toUpperCase()}/repos/${projectName.toLowerCase()}/pull-requests`,
+				headers: {
+					Accept: 'application/json',
+					Authorization: `Bearer ${accessToken}`
+				}
+			});
+
+			const { data } = response;
+			const pullRequests = data.values.filter(filters[filterType || 'default']);
+			jobCallback(null, { jobConfig: config, pullRequests });
+		} catch (e) {
+			jobCallback(e.message);
+		}
 	}
 };

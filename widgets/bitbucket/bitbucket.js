@@ -1,14 +1,13 @@
 widget = {
 	createPullRequestItem: (config, pullRequest) => {
-		const {baseUrl, projectName} = config;
-		const { title, author: { user: { slug } }, toRef: {displayId: branch}, reviewers} = pullRequest;
+		const { baseUrl, projectName } = config;
+		const { title, author: { user: { slug } }, toRef: { displayId: branch }, reviewers } = pullRequest;
 		const rx = new RegExp(`^(?:.*\\/)?${projectName}-(\\d+)(.*)$`);
 		const stripPrefix = title => {
 			const [_, id, text] = title.match(rx);
-			// strip away unnecessary leading characters
 			return {
 				id,
-				text: text.replace(/^[: /]*/, '')
+				text: text.replace(/^[: /]*/, '') // strip away unnecessary leading characters
 			};
 		};
 
@@ -44,7 +43,7 @@ widget = {
 
 
 	onData: function (el, data) {
-		const {  pullRequests, jobConfig } = data;
+		const { pullRequests, jobConfig } = data;
 		const pullRequestsEl = $('.pull-requests', el);
 		const { numberOfItems, widgetTitle } = jobConfig;
 

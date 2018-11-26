@@ -11,7 +11,7 @@ widget = {
 	},
 
 	createJobOverview(jenkinsBuilds) {
-		return jenkinsBuilds.map(({name, color}) => {
+		return jenkinsBuilds.map(({ name, color }) => {
 			const sign = this.getSignForColor(color);
 			return `<div class="jenkins-job-item status-${color}">${sign} ${name}</div>`;
 		}).join('');

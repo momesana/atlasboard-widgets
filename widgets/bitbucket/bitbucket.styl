@@ -21,6 +21,7 @@
 
     .pull-requests-item-content
       overflow hidden
+      margin-left 1em
 
       .pull-requests-item-content-ticket
         overflow hidden
@@ -29,13 +30,12 @@
 
         font-size 1.5em
         font-weight bold
-        margin-left 0.5em
 
         .pull-requests-item-content-ticket-id
-          color: white
+          color white
 
       .pull-requests-item-content-branch
-        margin-top -0.4em;
+        margin-top -0.4em
         overflow hidden
         white-space nowrap
         text-overflow ellipsis
@@ -43,7 +43,12 @@
         font-size 1em
         font-weight normal
         font-style italic
-        margin-left 1.5em
+
+        img.pull-requests-item-content-branch-icon
+          font-style normal
+          background-color transparent
+          opacity 0.5
+          margin-left 0
 
         img
           height 1em

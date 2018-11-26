@@ -33,8 +33,9 @@ widget = {
 						<span class="pull-requests-item-content-ticket-text">${text}</span>
 	            	</div>
 	            	<div class="pull-requests-item-content-branch">
-	                	${projectName}-${id} &rarr; ${branch}
-	                	${reviewerImages}
+	            		<img class="pull-requests-item-content-branch-icon"
+	            			 src="/widgets/resources?resource=atlasboard-widgets/bitbucket/Git-Icon-White.png"/>
+						${projectName}-${id} &rarr; ${branch} ${reviewerImages}
 	            	</div>
 	            </div>
 	        </div>

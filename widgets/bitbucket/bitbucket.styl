@@ -1,0 +1,58 @@
+.content
+  font-size 1em
+  color $gray-light
+
+.avatar-circle
+  border-radius 50%
+
+.pull-requests
+  .pull-requests-item
+    overflow hidden
+    display flex
+    flex-direction row
+    align-items center
+    margin-top 5px
+
+    .pull-requests-item-avatar
+      img
+        height 3em
+        width auto
+        background-color white
+
+    .pull-requests-item-content
+      overflow hidden
+
+      .pull-requests-item-content-ticket
+        overflow hidden
+        white-space nowrap
+        text-overflow ellipsis
+
+        font-size 1.5em
+        font-weight bold
+        margin-left 0.5em
+
+        .pull-requests-item-content-ticket-id
+          color: white
+
+      .pull-requests-item-content-branch
+        margin-top -0.4em;
+        overflow hidden
+        white-space nowrap
+        text-overflow ellipsis
+
+        font-size 1em
+        font-weight normal
+        font-style italic
+        margin-left 1.5em
+
+        img
+          height 1em
+          width auto
+          background-color white
+          margin-left 0.3em
+
+        img.reviewer-approved
+          border 2px solid #36b37e
+
+        img.reviewer-needs-work
+          border 2px solid #ffab00

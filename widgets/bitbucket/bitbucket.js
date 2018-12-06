@@ -1,28 +1,29 @@
 widget = {
 	createPullRequestItem: (config, pullRequest) => {
-		const { baseUrl, projectName } = config;
-		const { title, author: { user: { slug } }, toRef: { displayId: branch }, reviewers } = pullRequest;
-		const rx = new RegExp(`^(?:.*\\/)?${projectName}-(\\d+)(.*)$`);
-		const stripPrefix = title => {
-			const [_, id, text] = title.match(rx);
-			return {
-				id,
-				text: text.replace(/^[: /]*/, '') // strip away unnecessary leading characters
+		try {
+			const { baseUrl, projectName } = config;
+			const { title, author: { user: { slug } }, toRef: { displayId: branch }, reviewers } = pullRequest;
+			const rx = new RegExp(`^.*${projectName}-(\\d+)(.*)$`);
+			const stripPrefix = title => {
+				const [_, id, text] = title.match(rx);
+				return {
+					id,
+					text: text.replace(/^[: /]*/, '') // strip away unnecessary leading characters
+				};
 			};
-		};
 
-		const reviewerStateMapping = {
-			"APPROVED": "reviewer-approved",
-			"NEEDS_WORK": "reviewer-needs-work"
-		};
+			const reviewerStateMapping = {
+				"APPROVED": "reviewer-approved",
+				"NEEDS_WORK": "reviewer-needs-work"
+			};
 
-		const reviewerImages = reviewers.map(reviewer =>
-			`<img class="avatar-circle ${reviewerStateMapping[reviewer.status]}"
+			const reviewerImages = reviewers.map(reviewer =>
+				`<img class="avatar-circle ${reviewerStateMapping[reviewer.status]}"
 				  src="${baseUrl}/users/${reviewer.user.slug}/avatar.png"/>`)
-			.join('');
+				.join('');
 
-		const { id, text } = stripPrefix(title);
-		return `
+			const { id, text } = stripPrefix(title);
+			return `
 			<div class="pull-requests-item">
 	            <div class="pull-requests-item-avatar">
 	                <img class="avatar-circle" src="${baseUrl}/users/${slug}/avatar.png"/>
@@ -39,6 +40,11 @@ widget = {
 	            </div>
 	        </div>
 		`;
+		} catch (e) {
+			console.error(e);
+			console.error('happened for', pullRequest);
+			return null;
+		}
 	},
 
 
@@ -52,6 +58,7 @@ widget = {
 		const content = pullRequests
 			.slice(0, numberOfItems)
 			.map(pullRequest => this.createPullRequestItem(jobConfig, pullRequest))
+			.filter(pullRequest => Boolean(pullRequest)) // filter away null values
 			.join('');
 
 		pullRequestsEl.html(content);

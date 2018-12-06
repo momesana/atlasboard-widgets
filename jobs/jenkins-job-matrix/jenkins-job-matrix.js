@@ -11,85 +11,108 @@
  * }
  */
 
+const axios = require('axios');
+
+const getRunData = async function (username, password, url) {
+
+	const response = await axios({
+		url: `${url}/api/json`,
+		auth: {
+			username,
+			password
+		},
+		headers: {
+			Accept: 'application/json',
+		}
+	});
+
+	const { result, builtOn, culprits } = response.data;
+
+	return {
+		label: (builtOn.includes('docker') ? 'linux' : builtOn), // Fixme: use a mapping to rename, merge items
+		value: result.toLowerCase(),
+		culprits: culprits.map(({ fullName }) => fullName)
+	};
+};
+
+const getBuildData = async function (username, password, url) {
+
+	const response = await axios({
+		url: `${url}/api/json`,
+		auth: {
+			username,
+			password
+		},
+		headers: {
+			Accept: 'application/json',
+		}
+	});
+
+	const results = await Promise.all(
+		response.data.runs.map(({ url }) => getRunData(username, password, url))
+	);
+
+	const orderedStates = [undefined, 'success', 'unstable', 'failure'];
+
+	const isMoreSevere = (first, second) =>
+		orderedStates.indexOf(first) - orderedStates.indexOf(second) < 0;
+
+	return results.reduce((acc, { label, value, culprits }) => {
+		if (isMoreSevere(acc.buildResult[label], value)) {
+			acc.buildResult[label] = value;
+		}
+		acc.culprits.push(...culprits);
+		return acc;
+	}, { buildResult: {}, culprits: [] });
+};
+
 module.exports = {
 
-  /**
-   * Executed on job initialisation (only once)
-   * @param config
-   * @param dependencies
-   */
-  onInit: function (config, dependencies) {
+	onInit(config, dependencies) {
+	},
 
-    /*
-    This is a good place for initialisation logic, like registering routes in express:
+	onRun: async function (config, dependencies, jobCallback) {
+		try {
+			const { globalAuth, authName = 'jenkins' } = config;
 
-    dependencies.logger.info('adding routes...');
-    dependencies.app.route("/jobs/mycustomroute")
-        .get(function (req, res) {
-          res.end('So something useful here');
-        });
-    */
-  },
+			if (!globalAuth || !globalAuth[authName] ||
+				!globalAuth[authName].accessToken || !globalAuth[authName].username) {
+				return jobCallback('missing Jenkins credentials');
+			}
 
-  /**
-   * Executed every interval
-   * @param config
-   * @param dependencies
-   * @param jobCallback
-   */
-  onRun: function (config, dependencies, jobCallback) {
+			const { username, accessToken: password } = globalAuth[authName];
+			const { numberOfItems, baseUrl, widgetTitle, matrixJob } = config;
 
-    /*
-     1. USE OF JOB DEPENDENCIES
+			const response = await axios({
+				url: `${baseUrl}/job/${matrixJob}/api/json`,
+				auth: {
+					username,
+					password
+				},
+				headers: {
+					Accept: 'application/json',
+				}
+			});
 
-     You can use a few handy dependencies in your job:
+			const urls = response.data.builds
+				.slice(0, numberOfItems)
+				.map(build => build.url);
 
-     - dependencies.easyRequest : a wrapper on top of the "request" module
-     - dependencies.request : the popular http request module itself
-     - dependencies.logger : atlasboard logger interface
+			const buildResults = await Promise
+				.all(urls.map(url => getBuildData(username, password, url)));
 
-     Check them all out: https://bitbucket.org/atlassian/atlasboard/raw/master/lib/job-dependencies/?at=master
+			const { jobResults, culprits } = buildResults.reduce((acc, { buildResult, culprits }) => {
+				Object.entries(buildResult).forEach(([key, value]) => {
+					acc.jobResults[key] = acc.jobResults[key] ? [...acc.jobResults[key], value] : [value];
+					acc.culprits.add(...culprits);
+				});
+				return acc;
+			}, { jobResults: {}, culprits: new Set() });
 
-     */
-
-    var logger = dependencies.logger;
-
-    /*
-
-     2. CONFIGURATION CHECK
-
-     You probably want to check that the right configuration has been passed to the job.
-     It is a good idea to cover this with unit tests as well (see test/jenkins-job-matrix file)
-
-     Checking for the right configuration could be something like this:
-
-     if (!config.myrequiredConfig) {
-     return jobCallback('missing configuration properties!');
-     }
-
-
-     3. SENDING DATA BACK TO THE WIDGET
-
-     You can send data back to the widget anytime (ex: if you are hooked into a real-time data stream and
-     don't want to depend on the jobCallback triggered by the scheduler to push data to widgets)
-
-     jobWorker.pushUpdate({data: { title: config.widgetTitle, html: 'loading...' }}); // on Atlasboard > 1.0
-
-
-     4. USE OF JOB_CALLBACK
-
-     Using nodejs callback standard conventions, you should return an error or null (if success)
-     as the first parameter, and the widget's data as the second parameter.
-
-     This is an example of how to make an HTTP call to google using the easyRequest dependency,
-     and send the result to the registered widgets.
-     Have a look at test/jenkins-job-matrix for an example of how to unit tests this easily by mocking easyRequest calls
-
-     */
-
-    dependencies.easyRequest.HTML('http://google.com', function (err, html) {
-      // logger.trace(html);
-      jobCallback(err, {title: config.widgetTitle, html: html});
-    });
-  }
+			jobCallback(null, { jobConfig: config, title: widgetTitle, subtitle: matrixJob, jobResults, culprits: [...culprits] });
+		} catch (e) {
+			console.error(e);
+			jobCallback(e.message);
+		}
+	}
 };

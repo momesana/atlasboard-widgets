@@ -1,13 +1,29 @@
 widget = {
-  //runs when we receive data from the job
-  onData: function (el, data) {
+	createMatrix(title, subtitle, jobResults, culprits) {
+		return $(`
+			<h2 class="widget-title">${title}</h2>
+			<h3 class="widget-title">${subtitle}</h3>
+			<div class="job-matrix">
+				${Object.entries(jobResults).map(this.createRow).join('')}
+			</div>
+		`);
+	},
 
-    //The parameters our job passed through are in the data object
-    //el is our widget element, so our actions should all be relative to that
-    if (data.title) {
-      $('h2', el).text(data.title);
-    }
-
-    $('.content', el).html(data.text);
-  }
+	createRow([label, states]) {
+		const items = states.map(state => `<div class="job-matrix-bubbles-item ${state}"></div>`);
+		const os = label.includes('win') ? 'windows' : 'linux';
+		return `
+			<div class="job-matrix-label">
+				<span>${label}</span>
+				<span style="margin-left: 0.25em;"><i class="fab fa-${os}"/></span>
+			</div>
+			<div class="job-matrix-bubbles">${items.join('')}</div>
+		`;
+	},
+	//runs when we receive data from the job
+	onData(el, data) {
+		const { title, subtitle, jobResults, culprits } = data;
+		const content = this.createMatrix(title, subtitle, jobResults, culprits);
+		$('.content', el).html(content);
+	}
 };

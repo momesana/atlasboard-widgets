@@ -1,8 +1,7 @@
 widget = {
 	createMatrix(title, subtitle, jobResults, culprits) {
 		return $(`
-			<h2 class="widget-title">${title}</h2>
-			<h3 class="widget-title">${subtitle}</h3>
+			<h2 class="widget-title">${subtitle}</h2>
 			<div class="job-matrix">
 				${Object.entries(jobResults).map(this.createRow).join('')}
 			</div>

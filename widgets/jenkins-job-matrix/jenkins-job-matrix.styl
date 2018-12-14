@@ -1,33 +1,26 @@
 .content
-  display flex
   font-size 1em
   color $gray-light
   height 100%
   width 100%
+  display flex
+  flex-direction column
+
 
   .avatar-circle
     border-radius 50%
 
   .widget-title
-    writing-mode vertical-rl
-    transform rotate(180deg)
     text-align center
-    margin 0
-    height 100%
-
-  h3.widget-title
-    font-size 0.8em
-    color rgba(255,255,255,0.7)
-    margin 0.5em
-    overflow hidden
-    white-space nowrap
-    text-overflow ellipsis
+    margin-bottom 1em
+    flex-grow 1
 
   .job-matrix
+    flex-grow 3
     font-size 1.3em
     display grid
-    grid-template-columns auto auto
-    grid-column-gap 0.75em
+    grid-template-columns 47% 47%
+    grid-column-gap 6%
     align-items center
 
     .job-matrix-label
@@ -37,7 +30,6 @@
       text-align right
       font-size 1em
       font-weight bold;
-      padding-left: 1.5em;
 
     .job-matrix-bubbles
       height 2em;

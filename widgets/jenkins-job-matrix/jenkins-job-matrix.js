@@ -1,5 +1,5 @@
 widget = {
-	createMatrix(title, subtitle, jobResults, culprits) {
+	createMatrix(title, subtitle, jobResults) {
 		return $(`
 			<h2 class="widget-title">${subtitle}</h2>
 			<div class="job-matrix">
@@ -21,8 +21,8 @@ widget = {
 	},
 	//runs when we receive data from the job
 	onData(el, data) {
-		const { title, subtitle, jobResults, culprits } = data;
-		const content = this.createMatrix(title, subtitle, jobResults, culprits);
+		const { title, subtitle, jobResults } = data;
+		const content = this.createMatrix(title, subtitle, jobResults);
 		$('.content', el).html(content);
 	}
 };

@@ -64,7 +64,7 @@ module.exports = {
 				.sort(sortByColorAndName)
 				.slice(0, numberOfItems);
 
-			jobCallback(null, { jobConfig: config, jenkinsBuilds });
+			jobCallback(null, { jobConfig: config, jenkinsBuilds }); // fixme: don't pass the credentials on
 		} catch (e) {
 			jobCallback(e.message);
 		}

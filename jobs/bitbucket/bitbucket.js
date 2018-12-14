@@ -56,7 +56,7 @@ module.exports = {
 
 			const { data } = response;
 			const pullRequests = data.values.filter(filters[filterType || 'default']);
-			jobCallback(null, { jobConfig: config, pullRequests });
+			jobCallback(null, { jobConfig: config, pullRequests }); // fixme: don't pass on the credentials
 		} catch (e) {
 			jobCallback(e.message);
 		}

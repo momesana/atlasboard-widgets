@@ -12,11 +12,11 @@ const extractRunData = ({ result, builtOn }) => ({
 const getBuildResult = runData => {
 
 	return runData.reduce((acc, { label, value }) => {
-		if (isMoreSevere(acc.buildResult[label], value)) {
-			acc.buildResult[label] = value;
+		if (isMoreSevere(acc[label], value)) {
+			acc[label] = value;
 		}
 		return acc;
-	}, { buildResult: {} });
+	}, {});
 };
 
 module.exports = {
@@ -46,15 +46,14 @@ module.exports = {
 				}
 			});
 
-			const {jobResults} = response.data.builds
-				.map(({runs}) => runs.map(extractRunData))
+			const jobResults = response.data.builds
+				.map(({ runs }) => runs.map(extractRunData))
 				.map(getBuildResult)
-				.reduce((acc, { buildResult }) => {
-					Object.entries(buildResult).forEach(([key, value]) => {
-						acc.jobResults[key] = acc.jobResults[key] ? [...acc.jobResults[key], value] : [value];
-					});
+				.reduce((acc, cur) => {
+					Object.entries(cur).forEach(([key, value]) =>
+						acc[key] = acc[key] ? [...acc[key], value] : [value]);
 					return acc;
-				}, { jobResults: {} });
+				}, {});
 
 			jobCallback(null, {
 				jobConfig: config,

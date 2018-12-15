@@ -10,6 +10,7 @@ const extractRunData = ({ result, builtOn }) => ({
 });
 
 const getBuildResult = runData => {
+
 	return runData.reduce((acc, { label, value }) => {
 		if (isMoreSevere(acc.buildResult[label], value)) {
 			acc.buildResult[label] = value;

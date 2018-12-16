@@ -1,3 +1,9 @@
+@keyframes blink
+  from
+    background-color transparent
+  to
+    background-color #4e903d
+
 .content
   font-size 1em
   color $gray-light
@@ -58,3 +64,6 @@
 
       .failure
         background-color #ce2d22
+
+      .building
+        animation blink 1s infinite alternate

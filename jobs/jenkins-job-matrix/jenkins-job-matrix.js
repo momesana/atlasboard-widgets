@@ -1,12 +1,12 @@
 const axios = require('axios');
 
-const orderedStates = [undefined, 'success', 'unstable', 'failure'];
+const orderedStates = [undefined, 'success', 'building', 'unstable', 'failure'];
 
 const isMoreSevere = (first, second) => orderedStates.indexOf(first) - orderedStates.indexOf(second) < 0;
 
 const extractRunData = ({ result, builtOn }) => ({
 	label: (builtOn.includes('docker') ? 'linux' : builtOn), // Fixme: use a mapping to rename, merge items
-	value: result.toLowerCase()
+	value: result ? result.toLowerCase() : 'building'
 });
 
 const getBuildResult = runData => {

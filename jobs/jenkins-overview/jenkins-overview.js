@@ -31,7 +31,7 @@ module.exports = {
 	 */
 	async onRun(config, dependencies, jobCallback) {
 		try {
-			const { globalAuth, authName = 'jenkins' } = config;
+			const { globalAuth, authName = 'jenkins', ignoreList } = config;
 
 			if (!globalAuth || !globalAuth[authName] ||
 				!globalAuth[authName].accessToken || !globalAuth[authName].username) {
@@ -61,6 +61,7 @@ module.exports = {
 			const { jobs } = response.data;
 			const jenkinsBuilds = jobs
 				.filter(({ color }) => colors.includes(color))
+				.filter(({ name }) => !ignoreList.some(toIgnore => (new RegExp(toIgnore)).test(name)))
 				.sort(sortByColorAndName)
 				.slice(0, numberOfItems);
 

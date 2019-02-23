@@ -4,8 +4,10 @@ widget = {
 			const { baseUrl, projectName } = config;
 			const { title, author: { user: { slug } }, toRef: { displayId: branch }, reviewers, properties} = pullRequest;
 			const rx = new RegExp(`^.*${projectName}-(\\d+)(.*)$`);
+
 			const stripPrefix = title => {
 				const [_, id, text] = title.match(rx);
+
 				return {
 					id,
 					text: text.replace(/^[: /]*/, '') // strip away unnecessary leading characters
@@ -30,6 +32,7 @@ widget = {
 			`: '';
 
 			const { id, text } = stripPrefix(title);
+
 			return `
 			<div class="pull-requests-item">
 	            <div class="pull-requests-item-avatar">
@@ -48,8 +51,8 @@ widget = {
 	        </div>
 		`;
 		} catch (e) {
-			console.error(e);
-			console.error('happened for', pullRequest);
+			console.warn(e);
+			console.warn('happened for', pullRequest);
 			return null;
 		}
 	},

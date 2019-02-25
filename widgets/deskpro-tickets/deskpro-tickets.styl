@@ -1,0 +1,65 @@
+.content
+  box-sizing border-box
+  color $gray-light
+  font-size 1.5em
+
+  .category
+    border 3px solid gray
+    border-radius 5px
+    height 4em
+    position relative
+    margin-top 1em
+    display flex
+
+    .agents
+      padding 5px
+      align-self flex-end
+      display flex
+      flex-direction row
+      align-items flex-end
+      height 100%
+
+      $max-entries = 5
+      $decay = 0.15
+      for n in (0..$max-entries)
+        .agent:nth-child({n})
+          $height = (1.0 - $decay) ** n * 100%
+          height $height
+          margin 0 7px
+
+          img
+            display block
+            height 100%
+            background-color white
+            border-radius 50%
+
+    .category-title
+      background-color #181818
+      position absolute
+      transform translateY(-50%)
+      top 0
+      left 1em
+      font-size 1em
+      font-weight bold
+      text-transform uppercase
+
+    .category-count
+      background-color #181818
+      border 3px solid gray
+      border-radius 0.4em
+      color white
+      position absolute
+      top 0
+      right 1em
+      width 2em
+      height 1.3em
+      transform:translateY(-50%)
+      text-align center
+      font-weight bold
+      display flex
+      align-items center
+      justify-content center
+
+      > span
+        font-size 0.9em
+

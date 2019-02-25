@@ -4,6 +4,10 @@ const orderedStates = [undefined, 'success', 'building', 'unstable', 'failure'];
 
 const isMoreSevere = (first, second) => orderedStates.indexOf(first) - orderedStates.indexOf(second) < 0;
 
+const filterByName = (nameFilter, runData) => (
+    runData.filter(({fullDisplayName}) => nameFilter.test(fullDisplayName))
+);
+
 const extractRunData = ({ result, builtOn }) => ({
 	label: (builtOn.includes('docker') ? 'linux' : builtOn), // Fixme: use a mapping to rename, merge items
 	value: result ? result.toLowerCase() : 'building'
@@ -26,7 +30,7 @@ module.exports = {
 
 	onRun: async function (config, dependencies, jobCallback) {
 		try {
-			const { globalAuth, authName = 'jenkins' } = config;
+			const { globalAuth, authName = 'jenkins', nameFilter = '.*' } = config;
 
 			if (!globalAuth || !globalAuth[authName] ||
 				!globalAuth[authName].accessToken || !globalAuth[authName].username) {
@@ -46,8 +50,10 @@ module.exports = {
 				}
 			});
 
+            nameFilterRegex = new RegExp(nameFilter);
 			const jobResults = response.data.builds
-				.map(({ runs }) => runs.map(extractRunData))
+				.map(({ runs }) => filterByName(nameFilterRegex, runs))
+				.map(( runs ) => runs.map(extractRunData))
 				.map(getBuildResult)
 				.reduce((acc, cur) => {
 					Object.entries(cur).forEach(([key, value]) =>

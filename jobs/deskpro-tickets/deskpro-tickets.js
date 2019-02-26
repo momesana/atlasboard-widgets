@@ -46,7 +46,7 @@ const countFrequency = (acc, agent) => {
     return acc;
 };
 
-const processAgents = (data) => {
+const processAgents = (title, data) => {
     const rawAgents = data.map(stripAgent);
     agents = Object.entries(rawAgents.reduce(countFrequency, {}))
                  .map(([agent, count]) => [count, agent])
@@ -58,6 +58,7 @@ const processAgents = (data) => {
                  });
 
     return {
+        title,
         "count": data.length,
         agents,
     }
@@ -67,7 +68,7 @@ module.exports = {
     onInit(config, dependencies) {
     },
 
-    async onRun(config, dependencies, jobCallback) {
+    onRun: async function (config, dependencies, jobCallback) {
         try {
             const {globalAuth, widgetTitle, authName = 'deskpro', numberOfItems = 150} = config;
 
@@ -80,19 +81,28 @@ module.exports = {
             const ticketsAwaitingAgent = await fetchAll(accessToken, baseUrl, numberOfItems);
 
             const tickets = {
-                unassigned: processAgents(ticketsAwaitingAgent.filter(ticket => !ticket.date_first_agent_assign)),
-                onHold: processAgents(ticketsAwaitingAgent.filter(ticket => Boolean(ticket.is_hold))),
-                waitingMoreThan24Hours: processAgents(ticketsAwaitingAgent.filter(({date_user_waiting_ts_ms}) => {
-                    const waiting_in_hours = (Date.now() - date_user_waiting_ts_ms) / 3600000;
-                    return waiting_in_hours > 24;
-                })),
+                unassignedCount: ticketsAwaitingAgent.filter(ticket => !ticket.date_first_agent_assign).length,
+                categories: [
+                        processAgents("Waiting < 24 hours",
+                                      ticketsAwaitingAgent.filter(({date_user_waiting_ts_ms}) => {
+                            const waiting_in_hours = (Date.now() - date_user_waiting_ts_ms) / 3600000;
+                            return waiting_in_hours < 24;
+                        })),
+                        processAgents("Waiting > 24 hours",
+                                      ticketsAwaitingAgent.filter(({date_user_waiting_ts_ms}) => {
+                            const waiting_in_hours = (Date.now() - date_user_waiting_ts_ms) / 3600000;
+                            return waiting_in_hours > 24;
+                        })),
+                        processAgents("On Hold", ticketsAwaitingAgent.filter(ticket => Boolean(ticket.is_hold))),
+                ]
             };
 
             const {widgetTitle: title} = config;
             const jobConfig = {title};
 
-            jobCallback(null, {jobConfig, tickets});
+            jobCallback(null, {jobConfig, tickets: tickets});
         } catch (e) {
+			console.error(e);
             jobCallback(e.message);
         }
     }

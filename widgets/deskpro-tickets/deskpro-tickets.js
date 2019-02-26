@@ -1,20 +1,19 @@
 widget = {
     //runs when we receive data from the job
+    createCategoryItem: function({title, count, agents}) {
+        const createAgents = ({name, picture_url}) => {
+            return `
+                <div class="agent">
+                    <img src=${picture_url}>
+                </div>
+            `;
+        };
 
-    createAgents: function({name, picture_url}) {
-        return `
-            <div class="agent">
-	            <img src=${picture_url}>
-	        </div>
-        `;
-    },
-
-    createCategoryItem: function(name, count, agents) {
-        const renderedAgents = agents.map(this.createAgents).join(' ');
+        const renderedAgents = agents.map(createAgents).join(' ');
 
         return `
           <div class="category">
-              <div class="category-title">${name}</div>
+              <div class="category-title">${title}</div>
               <div class="agents">${renderedAgents}</div>
               <div class=category-count><span>${count}</span></div>
           </div>
@@ -22,22 +21,17 @@ widget = {
     },
 
     onData: function (el, data) {
+        console.dir(data);
 
         //The parameters our job passed through are in the data object
         //el is our widget element, so our actions should all be relative to that
-        const {jobConfig: {title}, tickets} = data;
+        const {jobConfig: {title}, tickets: {unassignedCount, categories}} = data;
 
         if (title) {
-            $('h2', el).text(title);
+            $('h2.widget-title', el).text(title);
         }
 
-        const {unassigned, onHold, waitingMoreThan24Hours} = tickets;
-        const content = [
-            this.createCategoryItem('unassigned', unassigned.count, unassigned.agents),
-            this.createCategoryItem('on hold', onHold.count, onHold.agents),
-            this.createCategoryItem('waiting > 24h', waitingMoreThan24Hours.count, waitingMoreThan24Hours.agents),
-
-        ].join('\n');
+        const content = categories.map(this.createCategoryItem).join('\n');
 
         $('.content', el).html(content);
     }

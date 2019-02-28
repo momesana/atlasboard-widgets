@@ -84,14 +84,14 @@ module.exports = {
                 unassignedCount: ticketsAwaitingAgent.filter(ticket => !ticket.date_first_agent_assign).length,
                 categories: [
                         processAgents("Waiting < 24 hours",
-                                      ticketsAwaitingAgent.filter(({date_user_waiting_ts_ms}) => {
+                                      ticketsAwaitingAgent.filter(({date_user_waiting_ts_ms, is_hold}) => {
                             const waiting_in_hours = (Date.now() - date_user_waiting_ts_ms) / 3600000;
-                            return waiting_in_hours < 24;
+                            return waiting_in_hours < 24 && !Boolean(is_hold);
                         })),
                         processAgents("Waiting > 24 hours",
-                                      ticketsAwaitingAgent.filter(({date_user_waiting_ts_ms}) => {
+                                      ticketsAwaitingAgent.filter(({date_user_waiting_ts_ms, is_hold}) => {
                             const waiting_in_hours = (Date.now() - date_user_waiting_ts_ms) / 3600000;
-                            return waiting_in_hours > 24;
+                            return waiting_in_hours > 24 && !Boolean(is_hold);
                         })),
                         processAgents("On Hold", ticketsAwaitingAgent.filter(ticket => Boolean(ticket.is_hold))),
                 ]

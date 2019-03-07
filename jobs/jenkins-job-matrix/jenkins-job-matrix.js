@@ -62,8 +62,7 @@ module.exports = {
 				}, {});
 
 			jobCallback(null, {
-				jobConfig: config,
-				title: widgetTitle,
+				widgetTitle,
 				subtitle: matrixJob,
 				jobResults
 			});

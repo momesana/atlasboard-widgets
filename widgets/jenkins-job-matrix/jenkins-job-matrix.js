@@ -21,8 +21,8 @@ widget = {
 	},
 	//runs when we receive data from the job
 	onData(el, data) {
-		const { title, subtitle, jobResults } = data;
-		const content = this.createMatrix(title, subtitle, jobResults);
+		const { widgetTitle, subtitle, jobResults } = data;
+		const content = this.createMatrix(widgetTitle, subtitle, jobResults);
 		$('.content', el).html(content);
 	}
 };

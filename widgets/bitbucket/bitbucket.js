@@ -2,7 +2,7 @@ widget = {
 	createPullRequestItem: (config, pullRequest) => {
 		try {
 			const { baseUrl, projectName } = config;
-			const { title, author: { user: { slug } }, toRef: { displayId: branch }, reviewers } = pullRequest;
+			const { title, author: { user: { slug } }, toRef: { displayId: branch }, reviewers, properties} = pullRequest;
 			const rx = new RegExp(`^.*${projectName}-(\\d+)(.*)$`);
 			const stripPrefix = title => {
 				const [_, id, text] = title.match(rx);
@@ -22,6 +22,11 @@ widget = {
 				  src="${baseUrl}/users/${reviewer.user.slug}/avatar.png"/>`)
 				.join('');
 
+			const openTaskCount = `
+			    <span>open tasks:</span>
+			    <span>${properties.openTaskCount}</span>
+			`;
+
 			const { id, text } = stripPrefix(title);
 			return `
 			<div class="pull-requests-item">
@@ -35,7 +40,7 @@ widget = {
 	            	<div class="pull-requests-item-content-branch">
 	            		<img class="pull-requests-item-content-branch-icon"
 	            			 src="/widgets/resources?resource=atlasboard-widgets/bitbucket/Git-Icon-White.png"/>
-						${projectName}-${id} &rarr; ${branch} ${reviewerImages}
+						${projectName}-${id} &rarr; ${branch} ${reviewerImages} ${openTaskCount}
 	            	</div>
 	            </div>
 	        </div>

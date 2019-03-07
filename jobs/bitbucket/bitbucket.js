@@ -16,7 +16,7 @@ const axios = require('axios');
 
 const filters = {
 	'default': () => true,
-	'filter-needs-work': pullRequest => pullRequest.reviewers.some(reviewer => reviewer.status === 'NEEDS_WORK'),
+	'filter-needs-work': pullRequest => pullRequest.reviewers.some(reviewer => reviewer.status === 'NEEDS_WORK' || pullRequest.properties.openTaskCount > 0),
 	'filter-needs-review': pullRequest => pullRequest.reviewers.some(reviewer => reviewer.status === 'UNAPPROVED'),
 	'filter-no-reviewer': pullRequest => !pullRequest.reviewers || !pullRequest.reviewers.length
 };

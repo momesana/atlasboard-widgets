@@ -22,6 +22,7 @@
     .pull-requests-item-content
       overflow hidden
       margin-left 1em
+      width 100%
 
       .pull-requests-item-content-ticket
         overflow hidden
@@ -39,6 +40,8 @@
         overflow hidden
         white-space nowrap
         text-overflow ellipsis
+        display flex
+        flex-direction row
 
         font-size 1em
         font-weight normal
@@ -61,3 +64,12 @@
 
         img.reviewer-needs-work
           border 2px solid #ffab00
+
+        .pull-requests-item-content-tasks
+            flex 1
+            text-align right
+
+          span
+            color crimson
+            margin-left 0.2em
+            font-style normal

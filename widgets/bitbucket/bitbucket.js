@@ -22,10 +22,12 @@ widget = {
 				  src="${baseUrl}/users/${reviewer.user.slug}/avatar.png"/>`)
 				.join('');
 
-			const openTaskCount = `
-			    <span>open tasks:</span>
+			const openTaskCount = (properties.openTaskCount > 0) ? `
+                <div class="pull-requests-item-content-tasks">
+			    <i class="far fa-check-square"></i>
 			    <span>${properties.openTaskCount}</span>
-			`;
+                </div>
+			`: '';
 
 			const { id, text } = stripPrefix(title);
 			return `

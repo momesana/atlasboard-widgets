@@ -1,0 +1,78 @@
+.content
+  font-size 1em
+  color $gray-light
+
+.avatar-circle
+  border-radius 50%
+
+.reviewer
+  .reviewer-item
+    display flex
+    flex-direction row
+    align-items top
+    padding 5px 0
+    border-bottom 1px solid grey
+
+    .reviewer-item-avatar
+      img
+        height 3em
+        width auto
+        background-color white
+
+    .reviewer-item-pull-requests
+      flex 1
+      overflow hidden
+
+      .pull-requests-item
+        margin-left 1em
+        border-bottom 1px dashed grey
+
+        .pull-requests-item-ticket
+          font-size 1.5em
+          font-weight bold
+          overflow hidden
+          white-space nowrap
+          text-overflow ellipsis
+
+          .pull-requests-item-text
+            display inline-block
+
+        .pull-requests-item-branch
+          margin-top -0.4em
+          overflow hidden
+          white-space nowrap
+          text-overflow ellipsis
+          display flex
+          flex-direction row
+          align-items center
+
+          font-size 1em
+          font-weight normal
+          font-style italic
+
+          img.pull-requests-item-branch-icon
+            font-style normal
+            background-color transparent
+            opacity 0.5
+            margin-left 0
+
+          img
+            height 1em
+            width auto
+            background-color white
+            margin-left 0.3em
+
+          .pull-requests-item-tasks
+              flex 1
+              text-align right
+
+            span
+              color crimson
+              margin-left 0.2em
+              font-style normal
+
+      .pull-requests-item:last-child
+        border-bottom none
+
+  .reviewer-item:last-child
+    border-bottom none

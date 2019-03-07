@@ -19,8 +19,7 @@ widget = {
 	},
 
 	onData(el, data) {
-		const { jenkinsBuilds, jobConfig } = data;
-		const { widgetTitle } = jobConfig;
+		const { jenkinsBuilds, widgetTitle } = data;
 
 		$(el.closest('.widget-container')).css({
 			display: 'flex',

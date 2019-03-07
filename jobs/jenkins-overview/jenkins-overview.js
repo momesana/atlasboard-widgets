@@ -31,7 +31,7 @@ module.exports = {
 	 */
 	async onRun(config, dependencies, jobCallback) {
 		try {
-			const { globalAuth, authName = 'jenkins', ignoreList } = config;
+			const { globalAuth, authName = 'jenkins', ignoreList, widgetTitle } = config;
 
 			if (!globalAuth || !globalAuth[authName] ||
 				!globalAuth[authName].accessToken || !globalAuth[authName].username) {
@@ -65,7 +65,7 @@ module.exports = {
 				.sort(sortByColorAndName)
 				.slice(0, numberOfItems);
 
-			jobCallback(null, { jobConfig: config, jenkinsBuilds }); // fixme: don't pass the credentials on
+			jobCallback(null, { widgetTitle, jenkinsBuilds });
 		} catch (e) {
 			jobCallback(e.message);
 		}

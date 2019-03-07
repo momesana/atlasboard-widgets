@@ -97,10 +97,7 @@ module.exports = {
                 ]
             };
 
-            const {widgetTitle: title} = config;
-            const jobConfig = {title};
-
-            jobCallback(null, {jobConfig, tickets: tickets});
+            jobCallback(null, {widgetTitle, tickets: tickets});
         } catch (e) {
 			console.error(e);
             jobCallback(e.message);

@@ -21,14 +21,12 @@ widget = {
     },
 
     onData: function (el, data) {
-        console.dir(data);
-
         //The parameters our job passed through are in the data object
         //el is our widget element, so our actions should all be relative to that
-        const {jobConfig: {title}, tickets: {unassignedCount, categories}} = data;
+        const {widgetTitle, tickets: {unassignedCount, categories}} = data;
 
-        if (title) {
-            $('.widget-title-title', el).text(title);
+        if (widgetTitle) {
+            $('.widget-title-title', el).text(widgetTitle);
         }
 
 

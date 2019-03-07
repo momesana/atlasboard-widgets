@@ -30,7 +30,8 @@ module.exports = {
 			const buildTimeDetails = response.data.builds
 				.filter(({ description }) => description && description.includes(descriptionFilter))
 				.map(({ duration, displayName, timestamp }) => ({ duration, displayName, timestamp }))
-				.slice(0, numberOfItems);
+				.slice(0, numberOfItems)
+				.reverse();
 
 			jobCallback(null, {
 				job,

@@ -39,15 +39,15 @@ module.exports = {
 	 */
 	onRun: async function (config, dependencies, jobCallback) {
 		try {
-			const { globalAuth, authName = 'bitbucket' } = config;
+			const { globalAuth, authName = 'bitbucket',
+			        numberOfItems, baseUrl, projectName,
+			         filterType, repoName, widgetTitle } = config;
 
 			if (!globalAuth || !globalAuth[authName] || !globalAuth[authName].accessToken) {
 				return jobCallback('missing BitBucket access token');
 			}
 
 			const { accessToken } = globalAuth[authName];
-			const { baseUrl, filterType, projectName, repoName } = config;
-
 			const response = await axios({
 				url: `${baseUrl}/rest/api/1.0/projects/${repoName.toUpperCase()}/repos/${projectName.toLowerCase()}/pull-requests`,
 				headers: {
@@ -57,8 +57,10 @@ module.exports = {
 			});
 
 			const { data } = response;
-			const pullRequests = data.values.filter(filters[filterType || 'default']);
-			jobCallback(null, { jobConfig: config, pullRequests }); // fixme: don't pass on the credentials
+			const jobConfig = {baseUrl, projectName, widgetTitle}
+			const pullRequests = data.values.filter(filters[filterType || 'default'])
+			                                .slice(0, numberOfItems);
+			jobCallback(null, { jobConfig: config, pullRequests });
 		} catch (e) {
 			jobCallback(e.message);
 		}

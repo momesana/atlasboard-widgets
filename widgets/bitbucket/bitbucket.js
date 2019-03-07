@@ -56,12 +56,11 @@ widget = {
 	onData: function (el, data) {
 		const { pullRequests, jobConfig } = data;
 		const pullRequestsEl = $('.pull-requests', el);
-		const { numberOfItems, widgetTitle } = jobConfig;
+		const { widgetTitle } = jobConfig;
 
 		$('.widget-title', el).text(widgetTitle);
 
 		const content = pullRequests
-			.slice(0, numberOfItems)
 			.map(pullRequest => this.createPullRequestItem(jobConfig, pullRequest))
 			.filter(pullRequest => Boolean(pullRequest)) // filter away null values
 			.join('');

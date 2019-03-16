@@ -32,8 +32,8 @@ const fetchAll = async (accessToken, baseUrl, maximumNumberOfItems) => {
 };
 
 const stripAgent = ({agent: {name, picture_url}}) => ({
-   name,
-   picture_url
+    name,
+    picture_url
 });
 
 const countFrequency = (acc, agent) => {
@@ -47,15 +47,16 @@ const countFrequency = (acc, agent) => {
 };
 
 const processAgents = (title, data) => {
-    const rawAgents = data.map(stripAgent);
-    agents = Object.entries(rawAgents.reduce(countFrequency, {}))
-                 .map(([agent, count]) => [count, agent])
-                 .sort()
-                 .reverse()
-                 .map(([count, agent]) => {
-                    const {name, picture_url} = JSON.parse(agent);
-                    return {name, picture_url, count}
-                 });
+    const rawAgents = data.filter(({agent}) => Boolean(agent)).map(stripAgent);
+    agents = Object
+        .entries(rawAgents.reduce(countFrequency, {}))
+        .map(([agent, count]) => [count, agent])
+        .sort()
+        .reverse()
+        .map(([count, agent]) => {
+            const {name, picture_url} = JSON.parse(agent);
+            return {name, picture_url, count}
+        });
 
     return {
         title,
@@ -83,23 +84,23 @@ module.exports = {
             const tickets = {
                 unassignedCount: ticketsAwaitingAgent.filter(ticket => !ticket.date_first_agent_assign).length,
                 categories: [
-                        processAgents("Waiting > 24 hours",
-                                      ticketsAwaitingAgent.filter(({date_user_waiting_ts_ms, is_hold}) => {
+                    processAgents("Waiting > 24 hours",
+                        ticketsAwaitingAgent.filter(({date_user_waiting_ts_ms, is_hold}) => {
                             const waiting_in_hours = (Date.now() - date_user_waiting_ts_ms) / 3600000;
                             return waiting_in_hours > 24 && !Boolean(is_hold);
                         })),
-                        processAgents("Waiting < 24 hours",
-                                      ticketsAwaitingAgent.filter(({date_user_waiting_ts_ms, is_hold}) => {
+                    processAgents("Waiting < 24 hours",
+                        ticketsAwaitingAgent.filter(({date_user_waiting_ts_ms, is_hold}) => {
                             const waiting_in_hours = (Date.now() - date_user_waiting_ts_ms) / 3600000;
                             return waiting_in_hours < 24 && !Boolean(is_hold);
                         })),
-                        processAgents("On Hold", ticketsAwaitingAgent.filter(ticket => Boolean(ticket.is_hold))),
+                    processAgents("On Hold", ticketsAwaitingAgent.filter(ticket => Boolean(ticket.is_hold))),
                 ]
             };
 
             jobCallback(null, {widgetTitle, tickets: tickets});
         } catch (e) {
-			console.error(e);
+            console.error(e);
             jobCallback(e.message);
         }
     }

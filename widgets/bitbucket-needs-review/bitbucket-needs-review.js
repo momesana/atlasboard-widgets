@@ -5,13 +5,15 @@ widget = {
 			const rx = new RegExp(`^.*${projectName}-(\\d+)(.*)$`);
             const createPullRequestItem = pullRequest => {
                 try {
-                    const { title, author: { user: { slug } }, toRef: { displayId: branch }, properties} = pullRequest;
+                    const { title, toRef: { displayId: branch }, properties} = pullRequest;
 
                     const stripPrefix = title => {
-                        const [_, id, text] = title.match(rx);
+                        const [_, id, rawText] = title.match(rx);
+                        const text = rawText.replace(/^[: /]*/, '');  // strip away unnecessary leading characters
+
                         return {
                             id,
-                            text: text.replace(/^[: /]*/, '') // strip away unnecessary leading characters
+                            text: (text && text.length) ? text: '(no description &#9785;)'
                         };
                     };
 

@@ -1,36 +1,40 @@
 widget = {
-	createPullRequestItem: (config, pullRequest) => {
-		try {
-			const { baseUrl, projectName } = config;
-			const { title, author: { user: { slug } }, toRef: { displayId: branch }, reviewers, properties} = pullRequest;
-			const rx = new RegExp(`^.*${projectName}-(\\d+)(.*)$`);
-			const stripPrefix = title => {
-				const [_, id, text] = title.match(rx);
-				return {
-					id,
-					text: text.replace(/^[: /]*/, '') // strip away unnecessary leading characters
-				};
-			};
+    createPullRequestItem: (config, pullRequest) => {
+        try {
+            const {baseUrl, projectName} = config;
+            const {title, author: {user: {slug}}, toRef: {displayId: branch}, reviewers, properties} = pullRequest;
+            const rx = new RegExp(`^.*${projectName}-(\\d+)(.*)$`);
+            const stripPrefix = title => {
+                const [_, id, rawText] = title.match(rx);
+                const text = rawText.replace(/^[: /]*/, '');  // strip away unnecessary leading characters
 
-			const reviewerStateMapping = {
-				"APPROVED": "reviewer-approved",
-				"NEEDS_WORK": "reviewer-needs-work"
-			};
+                return {
+                    id,
+                    text: (text && text.length) ? text: '(no description &#9785;)'
+                };
+            };
 
-			const reviewerImages = reviewers.map(reviewer =>
-				`<img class="avatar-circle ${reviewerStateMapping[reviewer.status]}"
-				  src="${baseUrl}/users/${reviewer.user.slug}/avatar.png"/>`)
-				.join('');
+            const reviewerStateMapping = {
+                "APPROVED": "reviewer-approved",
+                "NEEDS_WORK": "reviewer-needs-work"
+            };
 
-			const openTaskCount = (properties.openTaskCount > 0) ? `
+            const reviewerImages = reviewers.map(reviewer =>
+                `<div class="wrapper">
+					<img class="avatar-circle ${reviewerStateMapping[reviewer.status]}"
+					  src="${baseUrl}/users/${reviewer.user.slug}/avatar.png"/>
+				</div>
+				`).join('');
+
+            const openTaskCount = (properties.openTaskCount > 0) ? `
                 <div class="pull-requests-item-content-tasks">
 			    <i class="far fa-check-square"></i>
 			    <span>${properties.openTaskCount}</span>
                 </div>
-			`: '';
+			` : '';
 
-			const { id, text } = stripPrefix(title);
-			return `
+            const {id, text} = stripPrefix(title);
+            return `
 			<div class="pull-requests-item">
 	            <div class="pull-requests-item-avatar">
 	                <img class="avatar-circle" src="${baseUrl}/users/${slug}/avatar.png"/>
@@ -47,26 +51,26 @@ widget = {
 	            </div>
 	        </div>
 		`;
-		} catch (e) {
-			console.error(e);
-			console.error('happened for', pullRequest);
-			return null;
-		}
-	},
+        } catch (e) {
+            console.error(e);
+            console.error('happened for', pullRequest);
+            return null;
+        }
+    },
 
 
-	onData: function (el, data) {
-		const { pullRequests, jobConfig } = data;
-		const pullRequestsEl = $('.pull-requests', el);
-		const { widgetTitle } = jobConfig;
+    onData: function (el, data) {
+        const {pullRequests, jobConfig} = data;
+        const pullRequestsEl = $('.pull-requests', el);
+        const {widgetTitle} = jobConfig;
 
-		$('.widget-title', el).text(widgetTitle);
+        $('.widget-title', el).text(widgetTitle);
 
-		const content = pullRequests
-			.map(pullRequest => this.createPullRequestItem(jobConfig, pullRequest))
-			.filter(pullRequest => Boolean(pullRequest)) // filter away null values
-			.join('');
+        const content = pullRequests
+            .map(pullRequest => this.createPullRequestItem(jobConfig, pullRequest))
+            .filter(pullRequest => Boolean(pullRequest)) // filter away null values
+            .join('');
 
-		pullRequestsEl.html(content);
-	}
+        pullRequestsEl.html(content);
+    }
 };

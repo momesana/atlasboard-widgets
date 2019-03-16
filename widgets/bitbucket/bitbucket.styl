@@ -33,7 +33,7 @@
         font-weight bold
 
       .pull-requests-item-content-branch
-        margin-top -0.4em
+        margin-top -0.2em
         overflow hidden
         white-space nowrap
         text-overflow ellipsis
@@ -44,24 +44,32 @@
         font-size 1em
         font-weight normal
         font-style italic
+        height 1.5em
 
         img.pull-requests-item-content-branch-icon
-          font-style normal
-          background-color transparent
-          opacity 0.5
-          margin-left 0
-
-        img
-          height 1em
+          max-height 100%
           width auto
-          background-color white
+          margin 0.3em
+          opacity 0.5
+
+        .wrapper
+          height 100%
           margin-left 0.3em
 
-        img.reviewer-approved
-          border 2px solid #36b37e
+          img
+            display block
+            max-height 100%
+            width auto
 
-        img.reviewer-needs-work
-          border 2px solid #ffab00
+          img.reviewer-approved
+            border 0.1em solid #36b37e
+
+          img.reviewer-needs-work
+            border 0.1em solid #ffab00
+
+
+        .wrapper:first-of-type
+          margin-left .7em
 
         .pull-requests-item-content-tasks
             flex 1
@@ -71,3 +79,6 @@
             color crimson
             margin-left 0.2em
             font-style normal
+
+
+

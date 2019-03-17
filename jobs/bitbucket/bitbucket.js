@@ -1,16 +1,4 @@
 /* global process */
-/**
- * Job: bitbucket
- *
- * Expected configuration:
- *
- * ## PLEASE ADD AN EXAMPLE CONFIGURATION FOR YOUR JOB HERE
- * { 
- *   myconfigKey : [ 
- *     { serverUrl : 'localhost' } 
- *   ]
- * }
- */
 
 const axios = require('axios');
 
@@ -20,48 +8,73 @@ const filters = {
 	'filter-no-reviewer': pullRequest => !pullRequest.reviewers || !pullRequest.reviewers.length
 };
 
-module.exports = {
+const fetchNextPage = async (accessToken, url) => {
 
-	/**
-	 * Executed on job initialisation (only once)
-	 * @param config
-	 * @param dependencies
-	 */
+    const response = await axios({
+        url: `${url}`,
+        headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${accessToken}`
+        }
+    });
+
+    return response.data;
+};
+
+const fetchAll = async (config) => {
+
+    const {
+        globalAuth,
+            authName = 'bitbucket',
+            numberOfItems,
+            baseUrl,
+            projectName,
+            filterType,
+            repoName
+    } = config;
+
+    const {accessToken} = globalAuth[authName];
+    const urlWithoutReqParams =
+        `${baseUrl}/rest/api/1.0/projects/${repoName.toUpperCase()}/repos/${projectName.toLowerCase()}/pull-requests`;
+
+    const pullRequests = [];
+    let nextStartPage = null;
+    let isLastPage = false;
+
+    while (!isLastPage && pullRequests.length < numberOfItems) {
+        const url = urlWithoutReqParams + (nextStartPage ? `?start=${nextStartPage}` : '');
+        const data = await fetchNextPage(accessToken, url);
+        const {values, isLastPage: isLast, nextPageStart: nextPage} = data;
+        nextStartPage = nextPage;
+        isLastPage = isLast;
+        pullRequests.push(...values.filter(filters[filterType || 'default']));
+    }
+
+    return pullRequests.slice(0, numberOfItems);
+};
+
+module.exports = {
 	onInit: function (config, dependencies) {
 	},
 
-	/**
-	 * Executed every interval
-	 * @param config
-	 * @param dependencies
-	 * @param jobCallback
-	 */
 	onRun: async function (config, dependencies, jobCallback) {
 		try {
-			const { globalAuth, authName = 'bitbucket',
-			        numberOfItems, baseUrl, projectName,
-			         filterType, repoName, widgetTitle } = config;
+			const {globalAuth, authName = 'bitbucket', baseUrl, projectName, widgetTitle} = config;
 
-			if (!globalAuth || !globalAuth[authName] || !globalAuth[authName].accessToken) {
-				return jobCallback('missing BitBucket access token');
-			}
+            if (!globalAuth || !globalAuth[authName] || !globalAuth[authName].accessToken) {
+                return jobCallback('missing BitBucket access token');
+            }
 
-			const { accessToken } = globalAuth[authName];
-			const response = await axios({
-				url: `${baseUrl}/rest/api/1.0/projects/${repoName.toUpperCase()}/repos/${projectName.toLowerCase()}/pull-requests`,
-				headers: {
-					Accept: 'application/json',
-					Authorization: `Bearer ${accessToken}`
-				}
-			});
+            const pullRequests = await fetchAll(config);
+            const jobConfig = {
+                widgetTitle,
+                baseUrl,
+                projectName
+            };
 
-			const { data } = response;
-			const jobConfig = {baseUrl, projectName, widgetTitle}
-			const pullRequests = data.values.filter(filters[filterType || 'default'])
-			                                .slice(0, numberOfItems);
-			jobCallback(null, { jobConfig: config, pullRequests });
-		} catch (e) {
-			jobCallback(e.message);
-		}
-	}
+            jobCallback(null, {jobConfig, pullRequests});
+        } catch (e) {
+            jobCallback(e.message);
+        }
+    }
 };

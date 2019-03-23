@@ -57,9 +57,17 @@ module.exports = {
 					|| job1.name.localeCompare(job2.name);
 			};
 
+			const transform_data = ({name, color}) => ({
+                "color": color.replace('_anime', ''),
+                isBuilding: color.includes('_anime'),
+                name,
+			});
+
 
 			const { jobs } = response.data;
 			const jenkinsBuilds = jobs
+				.filter(({ color }) => Boolean(color))
+			    .map(transform_data)
 				.filter(({ color }) => colors.includes(color))
 				.filter(({ name }) => !ignoreList.some(toIgnore => (new RegExp(toIgnore)).test(name)))
 				.sort(sortByColorAndName)

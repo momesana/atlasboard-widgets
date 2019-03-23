@@ -40,7 +40,8 @@ module.exports = {
 			const byReviewer = Object.entries(data.values.reduce(reducer, {}))
 			                         .sort()
 			                         .slice(0, numberOfItems)
-			                         .map(([reviewer, pullRequests]) => ({reviewer, pullRequests}));
+			                         .map(([reviewer, pullRequests]) => ({reviewer, pullRequests}))
+			                         .sort(({ pullRequests: pr1 }, { pullRequests: pr2}) => pr1.length - pr2.length);
 			jobCallback(null, { jobConfig: config, byReviewer });
 		} catch (e) {
 			jobCallback(e.message);

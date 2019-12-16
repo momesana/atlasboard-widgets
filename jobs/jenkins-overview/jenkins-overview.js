@@ -31,7 +31,7 @@ module.exports = {
 	 */
 	async onRun(config, dependencies, jobCallback) {
 		try {
-			const { globalAuth, authName = 'jenkins', ignoreList, widgetTitle } = config;
+			const { globalAuth, authName = 'jenkins', includeRegex, ignoreList, widgetTitle } = config;
 
 			if (!globalAuth || !globalAuth[authName] ||
 				!globalAuth[authName].accessToken || !globalAuth[authName].username) {
@@ -69,6 +69,7 @@ module.exports = {
 				.filter(({ color }) => Boolean(color))
 			    .map(transform_data)
 				.filter(({ color }) => colors.includes(color))
+				.filter(({ name }) => (new RegExp(includeRegex)).test(name))
 				.filter(({ name }) => !ignoreList.some(toIgnore => (new RegExp(toIgnore)).test(name)))
 				.sort(sortByColorAndName)
 				.slice(0, numberOfItems);

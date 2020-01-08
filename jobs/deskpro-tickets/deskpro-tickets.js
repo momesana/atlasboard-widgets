@@ -94,7 +94,7 @@ module.exports = {
                             const waiting_in_hours = (Date.now() - date_user_waiting_ts_ms) / 3600000;
                             return waiting_in_hours < 24 && !Boolean(is_hold);
                         })),
-                    processAgents("On Hold", ticketsAwaitingAgent.filter(ticket => Boolean(ticket.is_hold))),
+                    processAgents("Pending", ticketsAwaitingAgent.filter(ticket => Boolean(ticket.is_hold))),
                 ]
             };
 

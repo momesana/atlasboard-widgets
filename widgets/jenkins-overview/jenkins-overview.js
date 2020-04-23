@@ -4,9 +4,9 @@ widget = {
 		return color === 'red' ? '&#9760;' : (color === 'yellow') ? '&#9888;' : defaultSign;
 	},
 
-	createAllOkItem() {
+	createAllOkItem(message) {
 		return $(`
-        <div class="jenkins-all-green"><div>All Builds Green</div></div>
+        <div class="jenkins-all-green"><div>${message}</div></div>
       `);
 	},
 
@@ -20,7 +20,7 @@ widget = {
 	},
 
 	onData(el, data) {
-		const { jenkinsBuilds, widgetTitle } = data;
+		const { jenkinsBuilds, widgetTitle, allGreenMessage } = data;
 
 		$(el.closest('.widget-container')).css({
 			display: 'flex',
@@ -30,7 +30,7 @@ widget = {
 		$('.widget-title', el).text(widgetTitle);
 
 		if (!jenkinsBuilds.length) {
-			$('.content', el).html(this.createAllOkItem());
+			$('.content', el).html(this.createAllOkItem(allGreenMessage));
 		} else {
 			$('.content', el).html(this.createJobOverview(jenkinsBuilds));
 		}

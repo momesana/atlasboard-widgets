@@ -4,7 +4,7 @@ const orderedStates = [undefined, 'success', 'building', 'unstable', 'failure'];
 
 const isMoreSevere = (first, second) => orderedStates.indexOf(first) - orderedStates.indexOf(second) < 0;
 
-const filterByName = (nameFilter, runData) => (
+const filterByName = (nameFilter, runData = []) => (
     runData.filter(({fullDisplayName}) => nameFilter.test(fullDisplayName))
 );
 

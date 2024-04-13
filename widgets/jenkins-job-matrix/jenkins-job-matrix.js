@@ -1,10 +1,16 @@
 widget = {
 	createMatrix(title, subtitle, jobResults) {
+		const rows = Object.entries(jobResults).map(this.createRow);
+		content = rows.length
+		? `
+			<div class="job-matrix">
+			${rows.join('')}
+			</div>
+		`
+		: '<div class="idle">Idle</div>';
 		return $(`
 			<h2 class="widget-title">${subtitle}</h2>
-			<div class="job-matrix">
-				${Object.entries(jobResults).map(this.createRow).join('')}
-			</div>
+			${content}
 		`);
 	},
 

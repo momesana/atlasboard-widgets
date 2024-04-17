@@ -16,7 +16,11 @@ widget = {
 
 	createRow([label, states]) {
 		const items = states.map(state => `<div class="job-matrix-bubbles-item ${state}"></div>`);
-		const os = label.includes('win') ? 'windows' : 'linux';
+		const os = label.includes('win')
+			? 'windows'
+			: label.includes('macos')
+			? 'apple'
+			: 'linux';
 		return `
 			<div class="job-matrix-label">
 				<span>${label}</span>

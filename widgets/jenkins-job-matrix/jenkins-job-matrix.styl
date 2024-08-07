@@ -20,6 +20,10 @@
     text-align center
     margin-bottom 0.5em
 
+    a
+      color inherit
+      text-decoration none
+
   .idle
     display grid
     flex 1
@@ -29,9 +33,9 @@
     flex-grow 1
     font-size 16px
     display grid
-    grid-template-columns 47% 47%
+    grid-template-columns 35% 60%
     align-content space-evenly
-    grid-column-gap 6%
+    grid-column-gap 5%
     align-items center
 
     .job-matrix-label
@@ -52,14 +56,14 @@
         background #5d806d
 
       $default-size = 2em
-      $max-entries = 5
-      $decay = 0.3
+      $max-entries = 10
+      gap: 0.4em;
+      $decay = 0.175
       for n in (0..$max-entries)
         .job-matrix-bubbles-item:nth-child({n})
           $size = (1.0 - $decay) ** n * $default-size
           min-width $size
           min-height $size
-          margin-right 0.4em
 
       .success
         background-color #4e903d

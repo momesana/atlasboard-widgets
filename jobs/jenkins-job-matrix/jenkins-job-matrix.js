@@ -8,16 +8,17 @@ const filterByName = (nameFilter, runData = []) => (
     runData.filter(({fullDisplayName}) => nameFilter.test(fullDisplayName))
 );
 
-const extractRunData = ({ result, builtOn }) => ({
-	label: (builtOn.includes('docker') ? 'linux' : builtOn), // Fixme: use a mapping to rename, merge items
-	value: result ? result.toLowerCase() : 'building'
+const extractRunData = (data) => ({
+	...data,
+	label: (data.builtOn.includes('docker') ? 'linux' : data.builtOn), // Fixme: use a mapping to rename, merge items
+	value: data.result?.toLowerCase() ?? 'building',
 });
 
 const getBuildResult = runData => {
 
-	return runData.reduce((acc, { label, value }) => {
-		if (isMoreSevere(acc[label], value)) {
-			acc[label] = value;
+	return runData.reduce((acc, item) => {
+		if (isMoreSevere(acc[item.label], item.value)) {
+		    acc[item.label] = item;
 		}
 		return acc;
 	}, {});
@@ -39,8 +40,9 @@ module.exports = {
 
 			const { username, accessToken: password } = globalAuth[authName];
 			const { numberOfItems, baseUrl, widgetTitle, matrixJob } = config;
+			const jobUrl = `${baseUrl}/job/${matrixJob}`;
 			const response = await axios({
-				url: `${baseUrl}/job/${matrixJob}/api/json?tree=builds[runs[builtOn,result,id,fullDisplayName]]{,${numberOfItems}}`,
+				url: `${jobUrl}/api/json?tree=builds[runs[builtOn,result,id,fullDisplayName]]{,${numberOfItems}}`,
 				auth: {
 					username,
 					password
@@ -51,9 +53,9 @@ module.exports = {
 			});
 
             nameFilterRegex = new RegExp(nameFilter);
-			const jobResults = response.data.builds
+			const runResults = response.data.builds
 				.map(({ runs }) => filterByName(nameFilterRegex, runs))
-				.map(( runs ) => runs.map(extractRunData))
+				.map(( items ) => items.map(item => extractRunData(item, jobUrl)))
 				.map(getBuildResult)
 				.reduce((acc, cur) => {
 					Object.entries(cur).forEach(([key, value]) =>
@@ -64,7 +66,8 @@ module.exports = {
 			jobCallback(null, {
 				widgetTitle,
 				subtitle: matrixJob,
-				jobResults
+				jobUrl,
+				runResults,
 			});
 		} catch (e) {
 			console.error(e);

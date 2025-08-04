@@ -4,75 +4,84 @@
   to
     background-color #5DADE2
 
-.content
-  font-size 1em
-  color $gray-light
-  height 100%
-  width 100%
+.widget
   display flex
   flex-direction column
-
-
-  .avatar-circle
-    border-radius 50%
+  height: 100%
+  overflow hidden
 
   .widget-title
     text-align center
     margin-bottom 0.5em
+    flex 0 0 auto
 
     a
       color inherit
       text-decoration none
 
-  .idle
-    display grid
+  .content
+    font-size 1em
+    color $gray-light
+    height 100%
+    width 100%
     flex 1
-    place-items center
+    display flex
+    flex-direction column
+    overflow-y auto
+    scrollbar-width none
 
-  .job-matrix
-    flex-grow 1
-    font-size 16px
-    display grid
-    grid-template-columns 35% 60%
-    align-content space-evenly
-    grid-column-gap 5%
-    align-items center
+    .avatar-circle
+      border-radius 50%
 
-    .job-matrix-label
-      overflow hidden
-      white-space nowrap
-      text-overflow ellipsis
-      text-align right
-      font-size 1em
-      font-weight bold
+    .idle
+      display grid
+      flex 1
+      place-items center
 
-    .job-matrix-bubbles
-      height 2em
-      display flex
+    .job-matrix
+      flex-grow 1
+      font-size 16px
+      display grid
+      grid-template-columns 35% 60%
+      align-content space-evenly
+      grid-column-gap 5%
       align-items center
 
-      .job-matrix-bubbles-item
-        border-radius 50%
-        background #5d806d
+      .job-matrix-label
+        overflow hidden
+        white-space nowrap
+        text-overflow ellipsis
+        text-align right
+        font-size 1em
+        font-weight bold
 
-      $default-size = 2em
-      $max-entries = 10
-      gap: 0.4em;
-      $decay = 0.175
-      for n in (0..$max-entries)
-        .job-matrix-bubbles-item:nth-child({n})
-          $size = (1.0 - $decay) ** n * $default-size
-          min-width $size
-          min-height $size
+      .job-matrix-bubbles
+        height 2em
+        display flex
+        align-items center
 
-      .success
-        background-color #4e903d
+        .job-matrix-bubbles-item
+          border-radius 50%
+          background #5d806d
 
-      .unstable
-        background-color #e9da00
+        $default-size = 2em
+        $max-entries = 10
+        gap: 0.4em;
+        $decay = 0.175
+        for n in (0..$max-entries)
+          .job-matrix-bubbles-item:nth-child({n})
+            $size = (1.0 - $decay) ** n * $default-size
+            min-width $size
+            min-height $size
 
-      .failure
-        background-color #ce2d22
+        .success
+          background-color #4e903d
 
-      .building
-        animation blink 1s infinite alternate
+        .unstable
+          background-color #e9da00
+
+        .failure
+          background-color #ce2d22
+
+        .building
+          animation blink 1s infinite alternate

@@ -1,8 +1,8 @@
 widget = {
     createPullRequestItem: (config, pullRequest) => {
         try {
-            const {baseUrl, projectName} = config;
-            const {title, author: {user: {slug}}, toRef: {displayId: branch}, reviewers, properties} = pullRequest;
+            const { baseUrl, projectName } = config;
+            const { title, author: { user: { slug } }, toRef: { displayId: branch }, reviewers, properties, links } = pullRequest;
             const rx = new RegExp(`^.*${projectName}-(\\d+)(.*)$`);
 
             const stripPrefix = title => {
@@ -11,7 +11,7 @@ widget = {
 
                 return {
                     id,
-                    text: (text && text.length) ? text: '(no description &#9785;)'
+                    text: (text && text.length) ? text : '(no description &#9785;)'
                 };
             };
 
@@ -22,49 +22,50 @@ widget = {
 
             const reviewerImages = reviewers.map(reviewer =>
                 `<div class="wrapper">
-					<img class="avatar-circle ${reviewerStateMapping[reviewer.status]}"
-					  src="${baseUrl}/users/${reviewer.user.slug}/avatar.png"/>
-				</div>
-				`).join('');
+                    <img class="avatar-circle ${reviewerStateMapping[reviewer.status]}"
+                      src="${baseUrl}/users/${reviewer.user.slug}/avatar.png"/>
+                </div>
+                `).join('');
 
             const openTaskCount = (properties.openTaskCount > 0) ? `
                 <div class="pull-requests-item-content-tasks">
-			    <i class="far fa-check-square"></i>
-			    <span>${properties.openTaskCount}</span>
+                <i class="far fa-check-square"></i>
+                <span>${properties.openTaskCount}</span>
                 </div>
-			` : '';
+            ` : '';
 
-            const {id, text} = stripPrefix(title);
+            const { id, text } = stripPrefix(title);
+            const url = links?.self?.[0]?.href ?? "";
 
             return `
-			<div class="pull-requests-item">
-	            <div class="pull-requests-item-avatar">
-	                <img class="avatar-circle" src="${baseUrl}/users/${slug}/avatar.png"/>
-	            </div>
-	            <div class="pull-requests-item-content">
-	            	<div class="pull-requests-item-content-ticket">
-						<span class="pull-requests-item-content-ticket-text">${text}</span>
-	            	</div>
-	            	<div class="pull-requests-item-content-branch">
-	            		<img class="pull-requests-item-content-branch-icon"
-	            			 src="/widgets/resources?resource=atlasboard-widgets/bitbucket/Git-Icon-White.png"/>
-						${projectName}-${id} &rarr; ${branch} ${reviewerImages} ${openTaskCount}
-	            	</div>
-	            </div>
-	        </div>
-		`;
+            <div class="pull-requests-item" title="${title}">
+                <div class="pull-requests-item-avatar">
+                    <img class="avatar-circle" src="${baseUrl}/users/${slug}/avatar.png"/>
+                </div>
+                <div class="pull-requests-item-content">
+                    <div class="pull-requests-item-content-ticket">
+                        <a href="${url}" class="pull-requests-item-content-ticket-text">${text}</a>
+                    </div>
+                    <div class="pull-requests-item-content-branch">
+                        <img class="pull-requests-item-content-branch-icon"
+                             src="/widgets/resources?resource=atlasboard-widgets/bitbucket/Git-Icon-White.png"/>
+                        <a href="${url}">${projectName}-${id}</a> &rarr; ${branch} ${reviewerImages} ${openTaskCount}
+                    </div>
+                </div>
+            </div>
+        `;
         } catch (e) {
-			console.warn(e);
-			console.warn('happened for', pullRequest);
+            console.warn(e);
+            console.warn('happened for', pullRequest);
             return null;
         }
     },
 
 
     onData: function (el, data) {
-        const {pullRequests, jobConfig} = data;
+        const { pullRequests, jobConfig } = data;
         const pullRequestsEl = $('.pull-requests', el);
-        const {widgetTitle} = jobConfig;
+        const { widgetTitle } = jobConfig;
 
         $('.widget-title', el).text(widgetTitle);
 

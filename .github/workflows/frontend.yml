@@ -1,0 +1,22 @@
+name: Frontend checks
+on: [pull_request]
+
+jobs:
+  frontend-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "lts/*"
+          check-latest: true
+          architecture: "x64"
+      - name: Initialize project
+        run: |
+          npm ci
+      - name: Run CI checks
+        run: npm run ci

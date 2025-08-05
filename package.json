@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-	  "ci": "biome ci",
-	  "check": "biome check --write"
+    "ci": "biome ci",
+    "check": "biome check --write"
   },
   "author": "",
   "license": "ISC",

@@ -40,7 +40,7 @@ widget = {
   //runs when we receive data from the job
   onData(el, data) {
     const { subtitle, runResults, jobUrl } = data;
-    $('.widget-title').html(`
+    $('.widget-title', el).html(`
 			<h2 class="widget-title">
 				<a href="${jobUrl}" target="_blank">${subtitle}</a>
 			</h2>

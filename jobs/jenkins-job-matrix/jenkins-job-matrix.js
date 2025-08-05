@@ -2,76 +2,77 @@ const axios = require('axios');
 
 const orderedStates = [undefined, 'success', 'building', 'unstable', 'failure'];
 
-const isMoreSevere = (first, second) => orderedStates.indexOf(first) - orderedStates.indexOf(second) < 0;
+const isMoreSevere = (first, second) =>
+  orderedStates.indexOf(first) - orderedStates.indexOf(second) < 0;
 
-const filterByName = (nameFilter, runData = []) => (
-    runData.filter(({fullDisplayName}) => nameFilter.test(fullDisplayName))
-);
+const filterByName = (nameFilter, runData = []) =>
+  runData.filter(({ fullDisplayName }) => nameFilter.test(fullDisplayName));
 
 const extractRunData = (data) => ({
-	...data,
-	label: (data.builtOn.includes('docker') ? 'linux' : data.builtOn), // Fixme: use a mapping to rename, merge items
-	value: data.result?.toLowerCase() ?? 'building',
+  ...data,
+  label: data.builtOn.includes('docker') ? 'linux' : data.builtOn, // Fixme: use a mapping to rename, merge items
+  value: data.result?.toLowerCase() ?? 'building',
 });
 
-const getBuildResult = runData => {
-
-	return runData.reduce((acc, item) => {
-		if (isMoreSevere(acc[item.label], item.value)) {
-		    acc[item.label] = item;
-		}
-		return acc;
-	}, {});
+const getBuildResult = (runData) => {
+  return runData.reduce((acc, item) => {
+    if (isMoreSevere(acc[item.label], item.value)) {
+      acc[item.label] = item;
+    }
+    return acc;
+  }, {});
 };
 
 module.exports = {
+  onRun: async (config, _dependencies, jobCallback) => {
+    try {
+      const { globalAuth, authName = 'jenkins', nameFilter = '.*' } = config;
 
-	onInit(config, dependencies) {
-	},
+      if (
+        !globalAuth ||
+        !globalAuth[authName] ||
+        !globalAuth[authName].accessToken ||
+        !globalAuth[authName].username
+      ) {
+        return jobCallback('missing Jenkins credentials');
+      }
 
-	onRun: async function (config, dependencies, jobCallback) {
-		try {
-			const { globalAuth, authName = 'jenkins', nameFilter = '.*' } = config;
+      const { username, accessToken: password } = globalAuth[authName];
+      const { numberOfItems, baseUrl, widgetTitle, matrixJob } = config;
+      const jobUrl = `${baseUrl}/job/${matrixJob}`;
+      const response = await axios({
+        url: `${jobUrl}/api/json?tree=builds[runs[builtOn,result,id,fullDisplayName]]{,${numberOfItems}}`,
+        auth: {
+          username,
+          password,
+        },
+        headers: {
+          Accept: 'application/json',
+        },
+      });
 
-			if (!globalAuth || !globalAuth[authName] ||
-				!globalAuth[authName].accessToken || !globalAuth[authName].username) {
-				return jobCallback('missing Jenkins credentials');
-			}
+      nameFilterRegex = new RegExp(nameFilter);
+      const runResults = response.data.builds
+        .map(({ runs }) => filterByName(nameFilterRegex, runs))
+        .map((items) => items.map((item) => extractRunData(item, jobUrl)))
+        .map(getBuildResult)
+        .reduce((acc, cur) => {
+          Object.entries(cur).forEach(([key, value]) => {
+            acc[key] = acc[key] ? [...acc[key], value] : [value];
+            return acc;
+          });
+          return acc;
+        }, {});
 
-			const { username, accessToken: password } = globalAuth[authName];
-			const { numberOfItems, baseUrl, widgetTitle, matrixJob } = config;
-			const jobUrl = `${baseUrl}/job/${matrixJob}`;
-			const response = await axios({
-				url: `${jobUrl}/api/json?tree=builds[runs[builtOn,result,id,fullDisplayName]]{,${numberOfItems}}`,
-				auth: {
-					username,
-					password
-				},
-				headers: {
-					Accept: 'application/json',
-				}
-			});
-
-            nameFilterRegex = new RegExp(nameFilter);
-			const runResults = response.data.builds
-				.map(({ runs }) => filterByName(nameFilterRegex, runs))
-				.map(( items ) => items.map(item => extractRunData(item, jobUrl)))
-				.map(getBuildResult)
-				.reduce((acc, cur) => {
-					Object.entries(cur).forEach(([key, value]) =>
-						acc[key] = acc[key] ? [...acc[key], value] : [value]);
-					return acc;
-				}, {});
-
-			jobCallback(null, {
-				widgetTitle,
-				subtitle: matrixJob,
-				jobUrl,
-				runResults,
-			});
-		} catch (e) {
-			console.error(e);
-			jobCallback(e.message);
-		}
-	}
+      jobCallback(null, {
+        widgetTitle,
+        subtitle: matrixJob,
+        jobUrl,
+        runResults,
+      });
+    } catch (e) {
+      console.error(e);
+      jobCallback(e.message);
+    }
+  },
 };

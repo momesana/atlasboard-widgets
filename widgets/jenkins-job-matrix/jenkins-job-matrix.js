@@ -1,4 +1,13 @@
 widget = {
+  onInit(el) {
+    this.cachedRenderer = new CachedRenderer(
+      {
+        title: ({ value, el }) => $('.widget-title', el).html(value),
+        content: ({ value, el }) => $('.content', el).html(value),
+      },
+      el,
+    );
+  },
   createMatrix({ runResults, jobUrl }) {
     const rows = Object.entries(runResults).map((item) =>
       this.createRow(item, jobUrl),
@@ -14,7 +23,6 @@ widget = {
   },
 
   createRow([label, data], jobUrl) {
-    console.log(data);
     const items = data.map(
       (item) => `
 			<a title="${item.fullDisplayName}"
@@ -37,14 +45,21 @@ widget = {
 			<div class="job-matrix-bubbles">${items.join('')}</div>
 		`;
   },
-  //runs when we receive data from the job
   onData(el, data) {
     const { subtitle, runResults, jobUrl } = data;
-    $('.widget-title', el).html(`
-			<h2 class="widget-title">
+    const title = `
+    	<h2 class="widget-title">
 				<a href="${jobUrl}" target="_blank">${subtitle}</a>
 			</h2>
-		`);
-    $('.content', el).html(this.createMatrix({ runResults, jobUrl }));
+    `;
+    const content = this.createMatrix({ runResults, jobUrl });
+
+    this.cachedRenderer.update(
+      {
+        title,
+        content,
+      },
+      el,
+    );
   },
 };

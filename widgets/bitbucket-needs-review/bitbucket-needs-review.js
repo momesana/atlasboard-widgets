@@ -1,4 +1,14 @@
 widget = {
+  onInit(el) {
+    this.cachedRenderer = new CachedRenderer(
+      {
+        title: ({ value, el }) => $('.widget-title', el).text(value),
+        content: ({ value, el }) => $('.reviewer', el).html(value),
+      },
+      el,
+    );
+  },
+
   createReviewerItem: (config, reviewer, pullRequests) => {
     try {
       const { baseUrl, projectName } = config;
@@ -72,20 +82,35 @@ widget = {
     }
   },
 
+  render: function (el, widgetTitle, content) {
+    if (this.widgetTitle !== widgetTitle) {
+      this.widgetTitle = widgetTitle;
+      $('.widget-title', el).text(this.widgetTitle);
+    }
+
+    if (this.content !== content) {
+      this.content = content;
+      $('.reviewer, el').html(this.content);
+    }
+  },
+
   onData: function (el, data) {
     const { byReviewer, jobConfig } = data;
-    const pullRequestsEl = $('.reviewer', el);
-    const { widgetTitle } = jobConfig;
+    const { widgetTitle: title } = jobConfig;
 
-    $('.widget-title', el).text(widgetTitle);
-
-    const content = byReviewer
+    content = byReviewer
       .map(({ reviewer, pullRequests }) =>
         this.createReviewerItem(jobConfig, reviewer, pullRequests),
       )
       .filter((pullRequest) => Boolean(pullRequest)) // filter away null values
       .join('');
 
-    pullRequestsEl.html(content);
+    this.cachedRenderer.update(
+      {
+        title,
+        content,
+      },
+      el,
+    );
   },
 };

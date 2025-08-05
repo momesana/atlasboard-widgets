@@ -1,4 +1,13 @@
 widget = {
+  onInit(el) {
+    this.cachedRenderer = new CachedRenderer(
+      {
+        title: ({ value, el }) => $('.widget-title', el).text(value),
+        content: ({ value, el }) => $('.pull-requests', el).html(value),
+      },
+      el,
+    );
+  },
   createPullRequestItem: (config, pullRequest) => {
     try {
       const { baseUrl, projectName } = config;
@@ -30,6 +39,13 @@ widget = {
       };
 
       const reviewerImages = reviewers
+        // for some reason the backend changes the order of the reviewers randomly so we have to sort it
+        .toSorted((r1, r2) => {
+          const primary = r1.status.localeCompare(r2.status);
+          return primary !== 0
+            ? primary
+            : r1.user.emailAddress.localeCompare(r2.user.emailAddress);
+        })
         .map(
           (reviewer) =>
             `<div class="wrapper">
@@ -79,16 +95,11 @@ widget = {
 
   onData: function (el, data) {
     const { pullRequests, jobConfig } = data;
-    const pullRequestsEl = $('.pull-requests', el);
-    const { widgetTitle } = jobConfig;
-
-    $('.widget-title', el).text(widgetTitle);
-
+    const { widgetTitle: title } = jobConfig;
     const content = pullRequests
       .map((pullRequest) => this.createPullRequestItem(jobConfig, pullRequest))
       .filter((pullRequest) => Boolean(pullRequest)) // filter away null values
       .join('');
-
-    pullRequestsEl.html(content);
+    this.cachedRenderer.update({ title, content }, el);
   },
 };

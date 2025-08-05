@@ -1,4 +1,14 @@
 widget = {
+  onInit(el) {
+    this.cachedRenderer = new CachedRenderer(
+      {
+        title: ({ value, el }) => $('.widget-title', el).text(value),
+        content: ({ value, el }) => $('.content', el).html(value),
+      },
+      el,
+    );
+  },
+
   getSignForColor(color) {
     const defaultSign = '&#10004;';
     return color === 'red'
@@ -25,19 +35,15 @@ widget = {
   },
 
   onData(el, data) {
-    const { jenkinsBuilds, widgetTitle, allGreenMessage } = data;
-
-    $(el.closest('.widget-container')).css({
-      display: 'flex',
-      'flex-direction': 'column',
-    });
-
-    $('.widget-title', el).text(widgetTitle);
-
-    if (!jenkinsBuilds.length) {
-      $('.content', el).html(this.createAllOkItem(allGreenMessage));
-    } else {
-      $('.content', el).html(this.createJobOverview(jenkinsBuilds));
-    }
+    const { jenkinsBuilds, widgetTitle: title, allGreenMessage } = data;
+    this.cachedRenderer.update(
+      {
+        title,
+        content: jenkinsBuilds.length
+          ? this.createJobOverview(jenkinsBuilds)
+          : this.createAllOkItem(allGreenMessage),
+      },
+      el,
+    );
   },
 };

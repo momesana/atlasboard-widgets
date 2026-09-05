@@ -12,6 +12,25 @@ const filters = {
     "filter-no-reviewer": pullRequest => !pullRequest.reviewers || !pullRequest.reviewers.length,
 };
 
+const isTeamMember = (teamMemberSet, user) =>
+    Boolean(
+        user &&
+        [user.slug, user.name, user.emailAddress]
+            .filter(Boolean)
+            .some(identifier => teamMemberSet.has(identifier.toLowerCase())),
+    );
+
+const teamFilter = teamMembers => {
+    if (!teamMembers || !teamMembers.length) {
+        return () => true;
+    }
+
+    const teamMemberSet = new Set(teamMembers.map(member => member.toLowerCase()));
+
+    return pullRequest =>
+        (pullRequest.reviewers || []).some(reviewer => isTeamMember(teamMemberSet, reviewer.user));
+};
+
 const fetchNextPage = async (accessToken, url) => {
     const response = await axios({
         url: `${url}`,
@@ -33,10 +52,14 @@ const fetchAll = async config => {
         projectName,
         filterType,
         repoName,
+        teamMembers,
     } = config;
 
     const { accessToken } = globalAuth[authName];
     const urlWithoutReqParams = `${baseUrl}/rest/api/1.0/projects/${repoName.toUpperCase()}/repos/${projectName.toLowerCase()}/pull-requests`;
+
+    const matchesFilterType = filters[filterType || "default"];
+    const matchesTeam = teamFilter(teamMembers);
 
     const pullRequests = [];
     let nextStartPage = null;
@@ -48,7 +71,11 @@ const fetchAll = async config => {
         const { values, isLastPage: isLast, nextPageStart: nextPage } = data;
         nextStartPage = nextPage;
         isLastPage = isLast;
-        pullRequests.push(...values.filter(filters[filterType || "default"]));
+        pullRequests.push(
+            ...values.filter(
+                pullRequest => matchesFilterType(pullRequest) && matchesTeam(pullRequest),
+            ),
+        );
     }
 
     return pullRequests.slice(0, numberOfItems);

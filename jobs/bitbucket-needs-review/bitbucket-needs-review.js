@@ -1,5 +1,23 @@
 const axios = require("axios");
 
+const isTeamMember = (teamMemberSet, user) =>
+    Boolean(
+        user &&
+        [user.slug, user.name, user.emailAddress]
+            .filter(Boolean)
+            .some(identifier => teamMemberSet.has(identifier.toLowerCase())),
+    );
+
+const teamReviewerFilter = teamMembers => {
+    if (!teamMembers || !teamMembers.length) {
+        return () => true;
+    }
+
+    const teamMemberSet = new Set(teamMembers.map(member => member.toLowerCase()));
+
+    return reviewer => isTeamMember(teamMemberSet, reviewer.user);
+};
+
 module.exports = {
     /**
      * Executed every interval
@@ -16,6 +34,8 @@ module.exports = {
                 baseUrl,
                 projectName,
                 repoName,
+                teamMembers,
+                fetchLimit,
             } = config;
 
             if (!globalAuth || !globalAuth[authName] || !globalAuth[authName].accessToken) {
@@ -24,7 +44,7 @@ module.exports = {
 
             const { accessToken } = globalAuth[authName];
             const response = await axios({
-                url: `${baseUrl}/rest/api/1.0/projects/${repoName.toUpperCase()}/repos/${projectName.toLowerCase()}/pull-requests`,
+                url: `${baseUrl}/rest/api/1.0/projects/${repoName.toUpperCase()}/repos/${projectName.toLowerCase()}/pull-requests${fetchLimit ? `?limit=${fetchLimit}` : ""}`,
                 headers: {
                     Accept: "application/json",
                     Authorization: `Bearer ${accessToken}`,
@@ -33,9 +53,12 @@ module.exports = {
 
             const { data } = response;
 
+            const isTeamReviewer = teamReviewerFilter(teamMembers);
             const reducer = (acc, pullRequest) => {
                 pullRequest.reviewers
-                    .filter(reviewer => reviewer.status === "UNAPPROVED")
+                    .filter(
+                        reviewer => reviewer.status === "UNAPPROVED" && isTeamReviewer(reviewer),
+                    )
                     .forEach(({ user: { slug } }) => {
                         acc[slug] = [...(acc[slug] || []), pullRequest];
                         return acc;

@@ -1,52 +1,52 @@
 widget = {
-  onInit(el) {
-    this.cachedRenderer = new CachedRenderer(
-      {
-        title: ({ value, el }) => $('.widget-title', el).text(value),
-        content: ({ value, el }) => $('.reviewer', el).html(value),
-      },
-      el,
-    );
-  },
+    onInit(el) {
+        this.cachedRenderer = new CachedRenderer(
+            {
+                title: ({ value, el }) => $(".widget-title", el).text(value),
+                content: ({ value, el }) => $(".reviewer", el).html(value),
+            },
+            el,
+        );
+    },
 
-  createReviewerItem: (config, reviewer, pullRequests) => {
-    try {
-      const { baseUrl, projectName } = config;
-      const rx = new RegExp(`^.*${projectName}-(\\d+)(.*)$`);
-      const createPullRequestItem = (pullRequest) => {
+    createReviewerItem: (config, reviewer, pullRequests) => {
         try {
-          const {
-            title,
-            toRef: { displayId: branch },
-            properties,
-            links,
-          } = pullRequest;
+            const { baseUrl, projectName } = config;
+            const rx = new RegExp(`^.*${projectName}-(\\d+)(.*)$`);
+            const createPullRequestItem = pullRequest => {
+                try {
+                    const {
+                        title,
+                        toRef: { displayId: branch },
+                        properties,
+                        links,
+                    } = pullRequest;
 
-          const stripPrefix = (title) => {
-            const [_, id, rawText] = title.match(rx);
-            const text = rawText.replace(/^[: /]*/, ''); // strip away unnecessary leading characters
+                    const stripPrefix = title => {
+                        const [_, id, rawText] = title.match(rx);
+                        const text = rawText.replace(/^[: /]*/, ""); // strip away unnecessary leading characters
 
-            return {
-              id,
-              text: text?.length ? text : '(no description &#9785;)',
-            };
-          };
+                        return {
+                            id,
+                            text: text?.length ? text : "(no description &#9785;)",
+                        };
+                    };
 
-          const { id, text } = stripPrefix(title);
+                    const { id, text } = stripPrefix(title);
 
-          const url = links?.self?.[0]?.href ?? '';
+                    const url = links?.self?.[0]?.href ?? "";
 
-          const openTaskCount =
-            properties.openTaskCount > 0
-              ? `
+                    const openTaskCount =
+                        properties.openTaskCount > 0
+                            ? `
                         <div class="pull-requests-item-tasks">
                         <i class="far fa-check-square"></i>
                         <span>${properties.openTaskCount}</span>
                         </div>
                     `
-              : '';
+                            : "";
 
-          return `
+                    return `
                         <div class="pull-requests-item" title="${title}">
                             <div class="pull-requests-item-ticket">
                                 <a href="${url}" class="pull-requests-item-ticket-text">${text}</a>
@@ -58,59 +58,59 @@ widget = {
                             </div>
                         </div>
                     `;
-        } catch (e) {
-          console.error(e);
-          console.error('happened for', pullRequest);
-          return null;
-        }
-      };
+                } catch (e) {
+                    console.error(e);
+                    console.error("happened for", pullRequest);
+                    return null;
+                }
+            };
 
-      return `
+            return `
                 <div class="reviewer-item">
                     <div class="reviewer-item-avatar">
                         <img class="avatar-circle" src="${baseUrl}/users/${reviewer}/avatar.png"/>
                     </div>
                     <div class="reviewer-item-pull-requests">
-                    ${pullRequests.map(createPullRequestItem).join('\n')}
+                    ${pullRequests.map(createPullRequestItem).join("\n")}
                     </div>
                 </div>
             `;
-    } catch (e) {
-      console.error(e);
-      console.error('happened for', reviewer);
-      return null;
-    }
-  },
+        } catch (e) {
+            console.error(e);
+            console.error("happened for", reviewer);
+            return null;
+        }
+    },
 
-  render: function (el, widgetTitle, content) {
-    if (this.widgetTitle !== widgetTitle) {
-      this.widgetTitle = widgetTitle;
-      $('.widget-title', el).text(this.widgetTitle);
-    }
+    render: function (el, widgetTitle, content) {
+        if (this.widgetTitle !== widgetTitle) {
+            this.widgetTitle = widgetTitle;
+            $(".widget-title", el).text(this.widgetTitle);
+        }
 
-    if (this.content !== content) {
-      this.content = content;
-      $('.reviewer, el').html(this.content);
-    }
-  },
+        if (this.content !== content) {
+            this.content = content;
+            $(".reviewer, el").html(this.content);
+        }
+    },
 
-  onData: function (el, data) {
-    const { byReviewer, jobConfig } = data;
-    const { widgetTitle: title } = jobConfig;
+    onData: function (el, data) {
+        const { byReviewer, jobConfig } = data;
+        const { widgetTitle: title } = jobConfig;
 
-    content = byReviewer
-      .map(({ reviewer, pullRequests }) =>
-        this.createReviewerItem(jobConfig, reviewer, pullRequests),
-      )
-      .filter((pullRequest) => Boolean(pullRequest)) // filter away null values
-      .join('');
+        content = byReviewer
+            .map(({ reviewer, pullRequests }) =>
+                this.createReviewerItem(jobConfig, reviewer, pullRequests),
+            )
+            .filter(pullRequest => Boolean(pullRequest)) // filter away null values
+            .join("");
 
-    this.cachedRenderer.update(
-      {
-        title,
-        content,
-      },
-      el,
-    );
-  },
+        this.cachedRenderer.update(
+            {
+                title,
+                content,
+            },
+            el,
+        );
+    },
 };

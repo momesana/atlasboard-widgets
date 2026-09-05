@@ -1,0 +1,31 @@
+{
+    "printWidth": 100,
+    "tabWidth": 4,
+    "useTabs": false,
+    "singleQuote": false,
+    "jsxSingleQuote": false,
+    "quoteProps": "as-needed",
+    "trailingComma": "all",
+    "semi": true,
+    "arrowParens": "avoid",
+    "bracketSameLine": false,
+    "bracketSpacing": true,
+    "sortImports": true,
+    "overrides": [
+        {
+            "comment": "YAML keeps the 2-space indent it is written with; the 4 above comes from the JavaScript sources and would reindent every workflow wholesale.",
+            "files": ["**/*.yaml", "**/*.yml"],
+            "options": {
+                "tabWidth": 2
+            }
+        }
+    ],
+    "ignorePatterns": [
+        "**/*.html",
+        "**/*.md",
+        "**/package.json",
+        "**/package-lock.json",
+        "**/*.min.js",
+        "**/*.min.css"
+    ]
+}
